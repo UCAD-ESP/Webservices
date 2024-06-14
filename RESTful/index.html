@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatroom</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        #chat { width: 300px; margin: 0 auto; }
+        #messages { border: 1px solid #ccc; height: 300px; overflow-y: scroll; margin-bottom: 10px; padding: 5px; }
+        input, button { width: 100%; padding: 10px; margin-top: 5px; }
+        #registerSection { margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div id="chat">
+        <h2>Chatroom</h2>
+        <div id="messages"></div>
+        <div id="registerSection">
+            <input id="username" placeholder="Enter your username">
+            <button onclick="registerUser()">Register</button>
+        </div>
+        <input id="message" placeholder="Enter your message">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+    <script>
+        const serverUrl = 'http://127.0.0.1:5000';
+        let isUserRegistered = false;
+
+        function registerUser() {
+            const username = document.getElementById('username').value;
+            fetch(`${serverUrl}/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username })
+            }).then(response => response.json())
+              .then(data => {
+                  console.log(data);
+                  if (data.status === "User registered") {
+                      document.getElementById('registerSection').style.display = 'none';
+                      isUserRegistered = true;
+                  }
+              });
+        }
+
+        function sendMessage() {
+            if (!isUserRegistered) {
+                alert('Please register first.');
+                return;
+            }
+            const username = document.getElementById('username').value;
+            const message = document.getElementById('message').value;
+            fetch(`${serverUrl}/messages`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, message })
+            }).then(response => response.json())
+              .then(data => {
+                  console.log(data);
+                  if (data.status === "Message received") {
+                      document.getElementById('message').value = '';  // Clear the message input field
+                  }
+              });
+        }
+
+        function fetchMessages() {
+            if (!isUserRegistered) return;
+            fetch(`${serverUrl}/messages`)
+              .then(response => response.json())
+              .then(data => {
+                  const messagesDiv = document.getElementById('messages');
+                  messagesDiv.innerHTML = '';
+                  data.forEach(msg => {
+                      const msgDiv = document.createElement('div');
+                      msgDiv.textContent = `${msg.username}: ${msg.message}`;
+                      messagesDiv.appendChild(msgDiv);
+                  });
+              });
+        }
+
+        setInterval(fetchMessages, 1000);  // Fetch messages every second
+    </script>
+</body>
+</html>
