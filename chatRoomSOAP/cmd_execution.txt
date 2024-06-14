@@ -1,0 +1,6 @@
+ javac -cp ".\Webcontent\WEB-INF\lib\*" -d .\build\classes\com\server\  .\src\com\server\RoomServiceImpl.java  .\src\com\server\Server.java .\src\com\server\RoomService.java     
+
+
+
+ java -cp "build/classes;Webcontent/WEB-INF/lib/*" com.server.Server
+           
